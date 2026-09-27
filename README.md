@@ -79,7 +79,7 @@ revoke all on function shahrah_get_auth(text) from public;
 
 Then:
 
-```
+```bash
 SHAHRAH_LISTEN=0.0.0.0:6432 \
 SHAHRAH_CONFIG=/etc/shahrah/shards.toml \
 SHAHRAH_BACKEND=10.0.0.11:5432 \
@@ -173,12 +173,12 @@ cannot see it — a view, a join, an ORM you do not control — say so in a comm
 The console is a database called `shahrah`, spoken over the same wire protocol,
 so psql reaches it:
 
-```
+```bash
 psql -h proxy -p 6432 -U youruser shahrah -c 'WHERE IS users 100005'
 ```
 
-```
- key    | why                          | logical | shard | endpoint       | local
+```text
+ answer     | learned_from                 | logical | shard | endpoint       | local
  eu-central | the directory, read just now |    6655 |     3 | 10.1.0.11:5432 | no
 ```
 
@@ -193,7 +193,7 @@ prepares every statement gets a clear error rather than rows, and should read
 
 ## Moving a user to another region
 
-```
+```bash
 psql -h proxy -p 6432 -U youruser shahrah -c 'RELOCATE users 100005 TO eu-central'
 ```
 
@@ -252,7 +252,7 @@ named user's rows are in. It asks for a password before it shows any of it.
 Set `SHAHRAH_METRICS_PASSWORD` to something generated rather than something
 chosen:
 
-```
+```bash
 openssl rand -base64 32
 ```
 
@@ -302,7 +302,7 @@ than the dashboard, so the page reads and does not act.
 
 ## Building
 
-```
+```bash
 cargo build --release
 cargo test --workspace
 ```

@@ -3,7 +3,7 @@
 One command, every participant on identical footing, a distribution rather than a
 figure.
 
-```
+```bash
 ./bench/run.sh --suite single --clients 64 --seconds 20 --rounds 5
 ```
 

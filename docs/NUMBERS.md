@@ -138,7 +138,7 @@ second read into a hash lookup; the first one crosses.
 
 ## Reproducing this
 
-```
+```bash
 ./bench/run.sh --suite single --clients 64 --seconds 12 --rounds 7
 ./bench/run.sh --suite sharded --clients 64 --seconds 12 --rounds 5 --workload select
 cd bench/geo && docker compose up -d --wait && python3 harness.py

@@ -4,7 +4,7 @@ Five regions, ten databases, real streaming replication, and the distances
 between them shaped in. This bed exists to be *looked at* rather than measured:
 it is what the dashboard has to render when a deployment is not a toy.
 
-```
+```bash
 ./prepare.sh
 docker compose up -d
 open https://127.0.0.1:9187/
@@ -44,7 +44,7 @@ warm for it, and it is why `SHAHRAH_WARM_PER_SHARD` exists.
 
 ## Driving traffic through it
 
-```
+```bash
 docker compose exec -d client bash -c "bash /world/spin.sh"
 ```
 
@@ -64,7 +64,7 @@ replays it in one session, forever. Run it two or three times for a busier page.
 
 It prints the password. Scrapers and `curl` send it as Basic or Bearer:
 
-```
+```bash
 curl -k -u op:"$(sed -n 's/^DASHBOARD_PASSWORD=//p' .env)" https://127.0.0.1:9187/metrics
 ```
 

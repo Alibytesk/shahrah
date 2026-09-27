@@ -1,4 +1,20 @@
 {
+  "$schema": "https://context7.com/schema/context7.json",
   "url": "https://context7.com/rs-alireza/shahrah",
-  "public_key": "pk_fKQR54KfMS7FrxP1OPy6Q"
+  "public_key": "pk_fKQR54KfMS7FrxP1OPy6Q",
+  "projectTitle": "shahrah",
+  "description": "PostgreSQL wire-protocol proxy that shards by a key you name, keeps a directory of which region each key lives in, routes to that region, and relocates a key between regions while the application keeps reading and writing.",
+  "folders": [],
+  "excludeFolders": ["crates", "target", "python/tests"],
+  "excludeFiles": ["Cargo.lock", "docs/vectors.tsv"],
+  "rules": [
+    "Applications speak plain PostgreSQL to shahrah-proxy. There is no driver to install and no shahrah-specific code in the request path.",
+    "Every table must be declared in the topology file as either [policy.keys.<table>] (geo-partitioned by one key) or [policy.replicated.<table>] (same rows in every region); shahrah refuses to guess.",
+    "A statement against a geo-partitioned table that does not carry its key is refused. When the key exists but shahrah cannot see it (views, joins, ORMs), pass it in a comment: /* shahrah: key=7 */.",
+    "The console is a database named shahrah on the same port and answers only the simple query protocol. Reach it with psql, not with a driver that prepares every statement.",
+    "Console verbs like WHERE IS and RELOCATE are typed into psql, not executed as SQL from an application connection.",
+    "SHAHRAH_METRICS_LISTEN is unset by default, and without SHAHRAH_METRICS_PASSWORD shahrah refuses to bind anything but loopback.",
+    "Backend TLS is opt-in with SHAHRAH_BACKEND_TLS=require; any other value, including unset, means disable."
+  ],
+  "previousVersions": []
 }

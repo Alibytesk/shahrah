@@ -3,7 +3,7 @@
 Three regions with the real distances shaped in, a proxy in each, and the same
 users served two ways: from their own region, or from one region for everyone.
 
-```
+```bash
 docker compose up -d --wait
 python3 harness.py
 ```
