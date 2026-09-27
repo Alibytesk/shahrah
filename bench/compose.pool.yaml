@@ -1,0 +1,23 @@
+name: shahrah-bench
+
+x-pool: &pool
+  build:
+    context: .
+    dockerfile: Dockerfile.shahrah
+  cpus: 2.0
+  mem_limit: 1g
+  networks: [bench]
+  environment:
+    SHAHRAH_BACKEND: pg1:5432
+  depends_on:
+    pg1: {condition: service_healthy}
+
+services:
+  pool2:
+    <<: *pool
+    entrypoint: ["env", "-u", "SHAHRAH_CONFIG", "/usr/local/bin/shahrah-proxy"]
+
+  pool1:
+    <<: *pool
+    entrypoint: ["env", "-u", "SHAHRAH_CONFIG", "SHAHRAH_WORKERS=1",
+                 "/usr/local/bin/shahrah-proxy"]

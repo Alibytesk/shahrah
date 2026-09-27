@@ -1,0 +1,13 @@
+[project]
+name = "shahrah"
+version = "0.1.0"
+description = "Helpers for talking to a shahrah proxy from asyncpg"
+requires-python = ">=3.10"
+dependencies = ["asyncpg>=0.29"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["shahrah*"]

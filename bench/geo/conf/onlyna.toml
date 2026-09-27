@@ -1,0 +1,11 @@
+region = "na-east"
+
+[policy.keys.people]
+column = "id"
+type = "int"
+
+[[shards]]
+number = 1
+region = "na-east"
+primary = { address = "pgna:5432", region = "na-east" }
+logical = [{ start = 0, end = 65535 }]

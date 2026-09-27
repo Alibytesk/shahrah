@@ -1,0 +1,16 @@
+FROM debian:13-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+ARG BINARY=shahrah-proxy
+COPY ${BINARY} /usr/local/bin/shahrah-proxy
+COPY conf/shahrah/shards.toml /etc/shahrah/shards.toml
+ENV SHAHRAH_LISTEN=0.0.0.0:6432 \
+    SHAHRAH_CONFIG=/etc/shahrah/shards.toml \
+    SHAHRAH_BACKEND_USER=shahrah \
+    SHAHRAH_BACKEND_PASSWORD=dev \
+    SHAHRAH_AUTH_DATABASE=postgres \
+    SHAHRAH_BACKEND=pg1:5432 \
+    SHAHRAH_MAX_POOL=200 \
+    RUST_LOG=warn
+EXPOSE 6432
+ENTRYPOINT ["/usr/local/bin/shahrah-proxy"]

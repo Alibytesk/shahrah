@@ -1,0 +1,37 @@
+[package]
+name = "shahrah-proxy"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+arc-swap = { workspace = true }
+base64 = { workspace = true }
+bytes = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true, features = ["std"] }
+shahrah-hash = { workspace = true }
+shahrah-protocol = { workspace = true }
+toml = { workspace = true }
+shahrah-sql = { workspace = true }
+shahrah-topology = { workspace = true }
+serde_json = { workspace = true }
+shahrah-routing = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "net", "io-util", "signal", "time", "sync"] }
+tokio-rustls = { workspace = true }
+rustls = { workspace = true }
+rustls-pemfile = { workspace = true }
+rustls-native-certs = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+pprof = { version = "0.15.0", features = ["flamegraph"], optional = true }
+sha1 = "0.11.0"
+sha2.workspace = true
+subtle.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+pprof = ["dep:pprof"]

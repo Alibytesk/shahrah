@@ -1,0 +1,16 @@
+[package]
+name = "shahrah-protocol"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+base64 = { workspace = true }
+hmac = { workspace = true }
+pbkdf2 = { workspace = true }
+sha2 = { workspace = true }
+subtle = { workspace = true }
+thiserror = { workspace = true }
+
+[lints]
+workspace = true

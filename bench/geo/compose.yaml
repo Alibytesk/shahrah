@@ -1,0 +1,86 @@
+name: shahrah-geo
+
+x-pg: &pg
+  image: postgres:18
+  environment:
+    POSTGRES_PASSWORD: dev
+    POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+  command: ["postgres", "-c", "max_connections=300", "-c", "fsync=off",
+            "-c", "synchronous_commit=off"]
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U postgres"]
+    interval: 3s
+    timeout: 3s
+    retries: 40
+  networks: [geo]
+
+x-proxy: &proxy
+  build:
+    context: ..
+    dockerfile: geo/Dockerfile.proxy
+  cap_add: [NET_ADMIN]
+  cpus: 2.0
+  mem_limit: 1g
+  volumes: ["./conf:/cfg:ro"]
+  networks: [geo]
+  depends_on:
+    pgna: {condition: service_healthy}
+    pgeu: {condition: service_healthy}
+    pgasia: {condition: service_healthy}
+
+services:
+  pgna: {<<: *pg}
+  pgeu: {<<: *pg}
+  pgasia: {<<: *pg}
+
+  geo-na:
+    <<: *proxy
+    environment:
+      SHAHRAH_CONFIG: /cfg/shahrah.toml
+      SHAHRAH_BACKEND: pgna:5432
+      SHAHRAH_REGION: na-east
+      FAR: "pgeu:42 pgasia:75"
+  geo-eu:
+    <<: *proxy
+    environment:
+      SHAHRAH_CONFIG: /cfg/eu.toml
+      SHAHRAH_BACKEND: pgeu:5432
+      FAR: "pgna:42 pgasia:110"
+  geo-asia:
+    <<: *proxy
+    environment:
+      SHAHRAH_CONFIG: /cfg/asia.toml
+      SHAHRAH_BACKEND: pgasia:5432
+      FAR: "pgna:75 pgeu:110"
+
+  one-na:
+    <<: *proxy
+    environment:
+      SHAHRAH_CONFIG: /cfg/onlyna.toml
+      SHAHRAH_BACKEND: pgna:5432
+      FAR: "pgeu:42 pgasia:75"
+  one-eu:
+    <<: *proxy
+    environment:
+      SHAHRAH_CONFIG: /cfg/onlyna.toml
+      SHAHRAH_BACKEND: pgna:5432
+      FAR: "pgna:42 pgasia:110"
+  one-asia:
+    <<: *proxy
+    environment:
+      SHAHRAH_CONFIG: /cfg/onlyna.toml
+      SHAHRAH_BACKEND: pgna:5432
+      FAR: "pgna:75 pgeu:110"
+
+  client:
+    build:
+      context: ..
+      dockerfile: Dockerfile.client
+    cpus: 2.0
+    networks: [geo]
+    volumes: ["./:/geo:ro"]
+
+networks:
+  geo:
+    name: shahrah-geo

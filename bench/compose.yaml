@@ -1,0 +1,92 @@
+name: shahrah-bench
+
+x-pg: &pg
+  image: postgres:18
+  environment:
+    POSTGRES_PASSWORD: dev
+    POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+  command:
+    - postgres
+    - -c
+    - max_connections=500
+    - -c
+    - shared_buffers=256MB
+    - -c
+    - fsync=off
+    - -c
+    - synchronous_commit=off
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U postgres"]
+    interval: 2s
+    timeout: 2s
+    retries: 30
+  networks: [bench]
+
+x-proxy: &proxy
+  cpus: 2.0
+  mem_limit: 1g
+  networks: [bench]
+  depends_on:
+    pg1: {condition: service_healthy}
+    pg2: {condition: service_healthy}
+    pg3: {condition: service_healthy}
+
+services:
+  pg1: {<<: *pg}
+  pg2: {<<: *pg}
+  pg3: {<<: *pg}
+
+  shahrah:
+    <<: *proxy
+    build:
+      context: .
+      dockerfile: Dockerfile.shahrah
+
+  shahrah1:
+    <<: *proxy
+    build:
+      context: .
+      dockerfile: Dockerfile.shahrah
+    volumes: ["./conf/shahrah:/cfg:ro"]
+    environment:
+      SHAHRAH_CONFIG: /cfg/one.toml
+
+
+  pgbouncer:
+    <<: *proxy
+    image: edoburu/pgbouncer:latest
+    volumes: ["./conf/pgbouncer:/cfg:ro"]
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "cp /cfg/pgbouncer.ini /cfg/userlist.txt /tmp/ && chmod 600 /tmp/userlist.txt && exec pgbouncer /tmp/pgbouncer.ini"]
+
+  pgcat:
+    <<: *proxy
+    image: ghcr.io/postgresml/pgcat:latest
+    volumes: ["./conf/pgcat:/cfg:ro"]
+    command: ["pgcat", "/cfg/pgcat.toml"]
+
+  pgdog:
+    <<: *proxy
+    image: ghcr.io/pgdogdev/pgdog:main
+    volumes: ["./conf/pgdog:/cfg:ro"]
+    command: ["/usr/local/bin/pgdog", "-c", "/cfg/pgdog.toml", "-u", "/cfg/users.toml", "run"]
+
+  pgdog1:
+    <<: *proxy
+    image: ghcr.io/pgdogdev/pgdog:main
+    volumes: ["./conf/pgdog:/cfg:ro"]
+    command: ["/usr/local/bin/pgdog", "-c", "/cfg/one.toml", "-u", "/cfg/users.toml", "run"]
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    cpus: 4.0
+    mem_limit: 1g
+    networks: [bench]
+    volumes: ["./:/bench:ro"]
+
+networks:
+  bench:
+    name: shahrah-bench

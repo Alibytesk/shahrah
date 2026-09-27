@@ -1,0 +1,725 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shahrah</title>
+<style>
+:root {
+  --ink: #e7ecf3;
+  --dim: #8b97a8;
+  --faint: #5d6879;
+  --bg: #0d1117;
+  --panel: #151b24;
+  --edge: #222b38;
+  --line: #2c3746;
+  --up: #3fb950;
+  --warn: #d29922;
+  --down: #f85149;
+  --cool: #58a6ff;
+  --violet: #a371f7;
+  --teal: #39c5cf;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 13px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--cool); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+header {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 14px 22px; border-bottom: 1px solid var(--edge);
+  background: linear-gradient(180deg, #131a23, #0f151d);
+  position: sticky; top: 0; z-index: 20;
+}
+.brand { font-size: 17px; font-weight: 650; letter-spacing: .3px; }
+.brand span { color: var(--faint); font-weight: 400; }
+.where { color: var(--dim); }
+.where b { color: var(--ink); font-weight: 600; }
+.spacer { flex: 1; }
+.pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 11px; border-radius: 999px; font-size: 12px;
+  border: 1px solid var(--edge); background: #10161e; color: var(--dim);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+.dot.on { background: var(--up); box-shadow: 0 0 0 3px rgba(63,185,80,.15); }
+.dot.off { background: var(--down); box-shadow: 0 0 0 3px rgba(248,81,73,.15); }
+.dot.wait { background: var(--warn); }
+
+main { padding: 20px 22px 60px; max-width: 1680px; margin: 0 auto; }
+.grid { display: grid; gap: 14px; }
+.k6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.k3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.k2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1200px) { .k6 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .k3, .k2 { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .k6 { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--edge);
+  border-radius: 10px; padding: 14px 16px; min-width: 0;
+}
+.panel h2 {
+  margin: 0 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--faint);
+}
+.stat .label {
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint);
+}
+.stat .value { font-size: 26px; font-weight: 620; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.stat .unit { font-size: 12px; color: var(--dim); font-weight: 400; margin-left: 4px; }
+.stat .foot { font-size: 11px; color: var(--faint); margin-top: 2px; }
+.stat svg { display: block; margin-top: 8px; width: 100%; height: 26px; }
+
+svg { display: block; overflow: visible; }
+.chart { width: 100%; height: 190px; }
+.tall { width: 100%; height: auto; }
+.axis { font-size: 10px; fill: var(--faint); font-variant-numeric: tabular-nums; }
+.gridline { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th {
+  text-align: left; font-size: 10px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--faint); font-weight: 600; padding: 0 10px 8px 0;
+  border-bottom: 1px solid var(--edge); white-space: nowrap;
+}
+td { padding: 8px 10px 8px 0; border-bottom: 1px solid #1b222c; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num { text-align: right; padding-right: 16px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 600; letter-spacing: .02em;
+}
+.tag.up { background: rgba(63,185,80,.14); color: var(--up); }
+.tag.suspect { background: rgba(210,153,34,.16); color: var(--warn); }
+.tag.recovering { background: rgba(88,166,255,.14); color: var(--cool); }
+.tag.down { background: rgba(248,81,73,.16); color: var(--down); }
+.tag.draining { background: rgba(163,113,247,.16); color: var(--violet); }
+.tag.ghost { background: #1b222c; color: var(--dim); }
+
+.bar { height: 5px; border-radius: 3px; background: #1b222c; overflow: hidden; min-width: 60px; }
+.bar i { display: block; height: 100%; background: var(--cool); border-radius: 3px; }
+
+.alert {
+  display: flex; gap: 12px; align-items: baseline; padding: 9px 12px; margin-bottom: 8px;
+  border-radius: 8px; background: rgba(248,81,73,.08); border: 1px solid rgba(248,81,73,.28);
+}
+.alert:last-child { margin-bottom: 0; }
+.alert b { color: var(--down); font-size: 12px; }
+.alert .who { font-family: ui-monospace, monospace; font-size: 12px; }
+.alert .why { color: var(--dim); font-size: 12px; }
+.calm { color: var(--dim); padding: 10px 0; display: flex; align-items: center; gap: 9px; }
+
+form.find { display: flex; gap: 8px; flex-wrap: wrap; }
+input {
+  background: #0f151d; border: 1px solid var(--edge); color: var(--ink);
+  border-radius: 7px; padding: 7px 11px; font: inherit; min-width: 0; flex: 1;
+}
+input:focus { outline: none; border-color: var(--cool); }
+button {
+  background: var(--cool); border: 0; color: #08121f; font: inherit; font-weight: 640;
+  border-radius: 7px; padding: 7px 16px; cursor: pointer;
+}
+button:hover { filter: brightness(1.1); }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px; color: var(--dim); margin-bottom: 6px; }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
+.empty { color: var(--faint); padding: 14px 0; }
+.scroll { overflow-x: auto; }
+.stale { opacity: .45; transition: opacity .3s; }
+</style>
+
+<header>
+  <div class="brand">shahrah<span> · control</span></div>
+  <div class="where">this proxy sits in <b id="region">—</b></div>
+  <div class="spacer"></div>
+  <div class="pill"><span id="uptime">—</span></div>
+  <div class="pill"><span class="dot" id="wire"></span><span id="wiretext">connecting</span></div>
+  <a class="pill" href="/logout" style="color:var(--dim)">sign out</a>
+</header>
+
+<main id="page" class="stale">
+  <section class="grid k6" id="kpis"></section>
+
+  <section class="grid k2" style="margin-top:14px">
+    <div class="panel">
+      <h2>statements a second</h2>
+      <div class="legend">
+        <span><i style="background:var(--cool)"></i>routed</span>
+        <span><i style="background:var(--teal)"></i>reaching a shard</span>
+        <span><i style="background:var(--violet)"></i>crossing a region</span>
+      </div>
+      <svg class="chart" id="throughput"></svg>
+    </div>
+    <div class="panel">
+      <h2>what went wrong a second</h2>
+      <div class="legend">
+        <span><i style="background:var(--down)"></i>backend errors</span>
+        <span><i style="background:var(--warn)"></i>refused by shahrah</span>
+        <span><i style="background:var(--faint)"></i>waits on the directory</span>
+      </div>
+      <svg class="chart" id="trouble"></svg>
+    </div>
+  </section>
+
+  <section class="grid k3" style="margin-top:14px">
+    <div class="panel">
+      <h2>statement cache</h2>
+      <svg class="chart" id="cachehit" style="height:150px"></svg>
+    </div>
+    <div class="panel">
+      <h2>home-region directory</h2>
+      <svg class="chart" id="dirhit" style="height:150px"></svg>
+    </div>
+    <div class="panel">
+      <h2>pooled connections</h2>
+      <svg class="chart" id="pool" style="height:150px"></svg>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:14px">
+    <h2>the world, as this proxy sees it</h2>
+    <svg id="topology" class="tall"></svg>
+  </section>
+
+  <section class="panel" style="margin-top:14px">
+    <h2>how far away each node is</h2>
+    <div class="legend">
+      <span>the median of the last 30 health probes — a query round trip, not a TCP connect</span>
+    </div>
+    <svg id="latency" class="tall"></svg>
+  </section>
+
+  <section class="grid k2" style="margin-top:14px">
+    <div class="panel">
+      <h2>worth waking someone for</h2>
+      <div id="alerts"></div>
+    </div>
+    <div class="panel">
+      <h2>every other proxy in the group</h2>
+      <div id="peers"></div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:14px">
+    <h2>every database, wherever it is</h2>
+    <div class="scroll"><table id="endpoints">
+      <thead><tr>
+        <th>region</th><th>shard</th><th>endpoint</th><th>state</th><th>role</th>
+        <th>right role</th><th class="num">probe</th><th class="num">connect</th>
+        <th class="num">behind</th><th class="num">statements</th>
+        <th class="num">errors</th><th class="num">idle</th><th>share of traffic</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel" style="margin-top:14px">
+    <h2>where is one user's data</h2>
+    <form class="find" action="/find" method="get">
+      <input name="table" placeholder="table, such as users" autocomplete="off">
+      <input name="key" placeholder="the key, such as 100005" autocomplete="off">
+      <button type="submit">find it</button>
+    </form>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var W = 640, H = 190;
+  var story = [];
+
+  function q(id) { return document.getElementById(id); }
+  function text(node, value) { if (node.textContent !== value) node.textContent = value; }
+
+  function millis(us) {
+    if (us === null || us === undefined) return "—";
+    var ms = us / 1000;
+    if (ms >= 100) return ms.toFixed(0) + " ms";
+    if (ms >= 10) return ms.toFixed(1) + " ms";
+    if (ms >= 1) return ms.toFixed(2) + " ms";
+    return us.toFixed(0) + " \u00b5s";
+  }
+
+  function human(n) {
+    if (n === null || n === undefined) return "—";
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + "k";
+    if (n >= 100) return n.toFixed(0);
+    if (n >= 10) return n.toFixed(1);
+    return n.toFixed(n < 1 && n > 0 ? 2 : 1);
+  }
+
+  function bytes(n) {
+    if (n === null || n === undefined) return "—";
+    var sign = n < 0 ? "-" : "";
+    n = Math.abs(n);
+    var units = ["B", "KiB", "MiB", "GiB", "TiB"], at = 0;
+    while (n >= 1024 && at < units.length - 1) { n /= 1024; at++; }
+    return sign + n.toFixed(at === 0 ? 0 : 1) + " " + units[at];
+  }
+
+  function spell(seconds) {
+    var d = Math.floor(seconds / 86400), h = Math.floor(seconds % 86400 / 3600);
+    var m = Math.floor(seconds % 3600 / 60), s = Math.floor(seconds % 60);
+    if (d) return d + "d " + h + "h";
+    if (h) return h + "h " + m + "m";
+    if (m) return m + "m " + s + "s";
+    return s + "s";
+  }
+
+  function rates(history, field) {
+    var out = [];
+    for (var i = 1; i < history.length; i++) {
+      var span = (history[i].at - history[i - 1].at) / 1000;
+      if (span <= 0) { out.push(0); continue; }
+      var step = history[i][field] - history[i - 1][field];
+      out.push(step > 0 ? step / span : 0);
+    }
+    return out;
+  }
+
+  function ceiling(series) {
+    var top = 0;
+    series.forEach(function (one) { one.forEach(function (v) { if (v > top) top = v; }); });
+    if (top <= 0) return 1;
+    var step = Math.pow(10, Math.floor(Math.log10(top)));
+    return Math.ceil(top / step) * step;
+  }
+
+  function path(values, top, w, h, closed) {
+    if (!values.length) return "";
+    var n = values.length;
+    var step = n > 1 ? w / (n - 1) : w;
+    var d = "";
+    for (var i = 0; i < n; i++) {
+      var x = i * step;
+      var y = h - (Math.min(values[i], top) / top) * h;
+      d += (i === 0 ? "M" : "L") + x.toFixed(2) + "," + y.toFixed(2);
+    }
+    if (closed) d += "L" + ((n - 1) * step).toFixed(2) + "," + h + "L0," + h + "Z";
+    return d;
+  }
+
+  function svgEl(name, attrs) {
+    var node = document.createElementNS("http://www.w3.org/2000/svg", name);
+    for (var k in attrs) if (attrs[k] !== null) node.setAttribute(k, attrs[k]);
+    return node;
+  }
+
+  function drawChart(target, series, opts) {
+    opts = opts || {};
+    var h = opts.height || H, pad = 28;
+    var w = W;
+    var top = ceiling(series.map(function (s) { return s.values; }));
+    target.setAttribute("viewBox", "0 0 " + (w + pad) + " " + (h + 18));
+    target.setAttribute("preserveAspectRatio", "none");
+    while (target.firstChild) target.removeChild(target.firstChild);
+
+    for (var g = 0; g <= 4; g++) {
+      var y = (h / 4) * g;
+      target.appendChild(svgEl("line", { x1: 0, y1: y, x2: w, y2: y, class: "gridline" }));
+      var label = svgEl("text", { x: w + 5, y: y + 3.5, class: "axis" });
+      label.textContent = human(top - (top / 4) * g);
+      target.appendChild(label);
+    }
+
+    series.forEach(function (one) {
+      if (one.fill) {
+        var area = svgEl("path", {
+          d: path(one.values, top, w, h, true),
+          fill: one.colour, opacity: .12, stroke: "none"
+        });
+        target.appendChild(area);
+      }
+      target.appendChild(svgEl("path", {
+        d: path(one.values, top, w, h, false),
+        fill: "none", stroke: one.colour, "stroke-width": one.width || 1.8,
+        "stroke-linejoin": "round", "stroke-linecap": "round",
+        "vector-effect": "non-scaling-stroke"
+      }));
+    });
+
+    var span = svgEl("text", { x: 0, y: h + 13, class: "axis" });
+    span.textContent = (series[0] && series[0].values.length ? series[0].values.length : 0) + "s of history";
+    target.appendChild(span);
+  }
+
+  function spark(values, colour) {
+    var w = 120, h = 26, top = ceiling([values]);
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+      '<path d="' + path(values, top, w, h, true) + '" fill="' + colour + '" opacity=".14"/>' +
+      '<path d="' + path(values, top, w, h, false) + '" fill="none" stroke="' + colour +
+      '" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>';
+  }
+
+  function kpi(label, value, unit, foot, values, colour) {
+    return '<div class="panel stat"><div class="label">' + label + '</div>' +
+      '<div class="value">' + value + (unit ? '<span class="unit">' + unit + '</span>' : '') +
+      '</div><div class="foot">' + foot + '</div>' +
+      (values ? spark(values, colour) : '') + '</div>';
+  }
+
+  function drawTopology(target, snap) {
+    while (target.firstChild) target.removeChild(target.firstChild);
+    var shards = snap.shards || [];
+    if (!shards.length) {
+      target.setAttribute("viewBox", "0 0 900 50");
+      var none = svgEl("text", { x: 4, y: 28, fill: "var(--faint)", "font-size": 13 });
+      none.textContent = "no topology is configured — every statement goes to one backend unchanged";
+      target.appendChild(none);
+      return;
+    }
+    var state = {};
+    (snap.endpoints || []).forEach(function (e) { state[e.address] = e; });
+
+    var byRegion = {};
+    shards.forEach(function (s) {
+      var r = s.region || "unnamed";
+      (byRegion[r] = byRegion[r] || []).push(s);
+    });
+    var regions = Object.keys(byRegion).sort();
+
+    var colW = Math.max(300, Math.round(1240 / regions.length));
+    var perRow = colW >= 460 ? 2 : 1;
+    var cardW = Math.floor((colW - 34 - (perRow - 1) * 10) / perRow);
+    var cardH = 42;
+
+    var rowsFor = function (shard) {
+      return Math.ceil((1 + (shard.replicas || []).length) / perRow);
+    };
+    var tallest = 0;
+    regions.forEach(function (r) {
+      var h = 0;
+      byRegion[r].forEach(function (s) { h += 22 + rowsFor(s) * (cardH + 8) + 10; });
+      tallest = Math.max(tallest, h);
+    });
+
+    var padTop = 40;
+    var w = colW * regions.length;
+    var h = padTop + tallest + 8;
+    target.setAttribute("viewBox", "0 0 " + w + " " + h);
+    target.setAttribute("preserveAspectRatio", "xMinYMin meet");
+
+    var colour = { up: "var(--up)", suspect: "var(--warn)", recovering: "var(--cool)",
+                   down: "var(--down)", draining: "var(--violet)" };
+
+    regions.forEach(function (region, ri) {
+      var x = ri * colW + 8;
+      var here = region === snap.region;
+      target.appendChild(svgEl("rect", {
+        x: x, y: 8, width: colW - 20, height: h - 16, rx: 10,
+        fill: here ? "rgba(88,166,255,.05)" : "rgba(255,255,255,.012)",
+        stroke: here ? "rgba(88,166,255,.38)" : "var(--edge)"
+      }));
+
+      var name = svgEl("text", { x: x + 14, y: 30, fill: here ? "var(--cool)" : "var(--dim)",
+        "font-size": 13.5, "font-weight": 650 });
+      name.textContent = region;
+      target.appendChild(name);
+      if (here) {
+        var mine = svgEl("text", { x: x + 16 + region.length * 7.6, y: 30,
+          fill: "var(--faint)", "font-size": 11 });
+        mine.textContent = "· this proxy";
+        target.appendChild(mine);
+      }
+
+      var y = padTop;
+      byRegion[region].forEach(function (shard) {
+        var tag = svgEl("text", { x: x + 14, y: y + 10, fill: "var(--faint)",
+          "font-size": 10.5, "letter-spacing": ".06em" });
+        tag.textContent = "SHARD " + shard.number;
+        target.appendChild(tag);
+
+        var members = [{ address: shard.primary, role: "primary" }].concat(
+          (shard.replicas || []).map(function (a) { return { address: a, role: "replica" }; }));
+
+        members.forEach(function (member, mi) {
+          var col = mi % perRow, row = Math.floor(mi / perRow);
+          var mx = x + 14 + col * (cardW + 10);
+          var my = y + 18 + row * (cardH + 8);
+          var seen = state[member.address] || {};
+          var bad = seen.state && seen.state !== "up";
+          target.appendChild(svgEl("rect", {
+            x: mx, y: my, width: cardW, height: cardH, rx: 8,
+            fill: "#0f151d",
+            stroke: bad ? colour[seen.state] : "var(--edge)",
+            "stroke-opacity": bad ? .5 : 1
+          }));
+          target.appendChild(svgEl("circle", {
+            cx: mx + 14, cy: my + 21, r: 4.5, fill: colour[seen.state] || "var(--faint)"
+          }));
+          var who = svgEl("text", { x: mx + 26, y: my + 18, fill: "var(--ink)",
+            "font-size": 11.5, "font-family": "ui-monospace, monospace" });
+          who.textContent = member.address;
+          target.appendChild(who);
+          var below = member.role;
+          if (seen.typical_us !== null && seen.typical_us !== undefined) {
+            below += " · " + millis(seen.typical_us);
+          }
+          if (seen.behind !== null && seen.behind !== undefined) below += " · " + bytes(seen.behind);
+          var role = svgEl("text", { x: mx + 26, y: my + 32, fill: "var(--faint)", "font-size": 10 });
+          role.textContent = below;
+          target.appendChild(role);
+        });
+
+        y += 18 + rowsFor(shard) * (cardH + 8) + 12;
+      });
+    });
+  }
+
+  function drawLatency(target, snap) {
+    while (target.firstChild) target.removeChild(target.firstChild);
+    var nodes = (snap.endpoints || []).filter(function (e) { return e.typical_us !== null; });
+    if (!nodes.length) {
+      target.setAttribute("viewBox", "0 0 900 50");
+      var none = svgEl("text", { x: 4, y: 28, fill: "var(--faint)", "font-size": 13 });
+      none.textContent = "no endpoint has answered a probe yet";
+      target.appendChild(none);
+      return;
+    }
+    nodes.sort(function (a, b) { return a.typical_us - b.typical_us; });
+    var top = 0;
+    nodes.forEach(function (e) { top = Math.max(top, e.worst_us || e.typical_us); });
+    if (top <= 0) top = 1;
+
+    var rowH = 30, labelW = 260, barW = 620, pad = 14;
+    var w = labelW + barW + 130;
+    var h = pad + nodes.length * rowH + 10;
+    target.setAttribute("viewBox", "0 0 " + w + " " + h);
+    target.setAttribute("preserveAspectRatio", "xMinYMin meet");
+
+    var near = "var(--up)", middling = "var(--warn)", far = "var(--down)";
+    nodes.forEach(function (e, i) {
+      var y = pad + i * rowH;
+      var who = svgEl("text", { x: 0, y: y + 14, fill: "var(--ink)", "font-size": 11.5,
+        "font-family": "ui-monospace, monospace" });
+      who.textContent = e.address;
+      target.appendChild(who);
+      var place = svgEl("text", { x: 0, y: y + 25, fill: "var(--faint)", "font-size": 9.5 });
+      place.textContent = (e.region || "no region") + " · shard " +
+        (e.shard === null ? "—" : e.shard) + " · " + e.role;
+      target.appendChild(place);
+
+      var ms = e.typical_us / 1000;
+      var colour = ms < 5 ? near : (ms < 50 ? middling : far);
+      target.appendChild(svgEl("rect", {
+        x: labelW, y: y + 6, width: barW, height: 13, rx: 4, fill: "#1b222c"
+      }));
+      if (e.worst_us) {
+        target.appendChild(svgEl("rect", {
+          x: labelW, y: y + 6, width: Math.max(2, (e.worst_us / top) * barW),
+          height: 13, rx: 4, fill: colour, opacity: .22
+        }));
+      }
+      target.appendChild(svgEl("rect", {
+        x: labelW, y: y + 6, width: Math.max(2, (e.typical_us / top) * barW),
+        height: 13, rx: 4, fill: colour
+      }));
+      var value = svgEl("text", { x: labelW + barW + 10, y: y + 17, fill: "var(--ink)",
+        "font-size": 11.5, "font-variant-numeric": "tabular-nums" });
+      value.textContent = millis(e.typical_us);
+      target.appendChild(value);
+      var worst = svgEl("text", { x: labelW + barW + 74, y: y + 17, fill: "var(--faint)",
+        "font-size": 10 });
+      worst.textContent = "max " + millis(e.worst_us);
+      target.appendChild(worst);
+    });
+  }
+
+  function render(snap) {
+    if (snap.full) {
+      story = snap.history || [];
+    } else {
+      (snap.history || []).forEach(function (point) {
+        if (!story.length || point.at > story[story.length - 1].at) story.push(point);
+      });
+      while (story.length > 180) story.shift();
+    }
+    snap = Object.assign({}, snap, { history: story });
+    text(q("region"), snap.region);
+    text(q("uptime"), "up " + spell(snap.uptime));
+
+    var hist = snap.history || [];
+    var routed = rates(hist, "statements");
+    var served = rates(hist, "served");
+    var outside = rates(hist, "outside");
+    var errors = rates(hist, "errors");
+    var refused = rates(hist, "refused");
+    var waits = rates(hist, "waits");
+    var chit = rates(hist, "cache_hits"), cmiss = rates(hist, "cache_misses");
+    var dhit = rates(hist, "directory_hits"), dmiss = rates(hist, "directory_misses");
+
+    function latest(list) { return list.length ? list[list.length - 1] : 0; }
+    function ratio(hits, misses) {
+      var h = latest(hits), m = latest(misses);
+      return h + m > 0 ? (h / (h + m)) * 100 : null;
+    }
+
+    var idleNow = snap.totals.idle, openedNow = snap.totals.opened;
+    var cacheRatio = ratio(chit, cmiss), dirRatio = ratio(dhit, dmiss);
+
+    q("kpis").innerHTML =
+      kpi("statements", human(latest(routed)), "/s", "routed by shahrah", routed, "var(--cool)") +
+      kpi("reaching a shard", human(latest(served)), "/s", "counted at the endpoint", served, "var(--teal)") +
+      kpi("refused", human(latest(refused)), "/s", "no key shahrah could trust", refused, "var(--warn)") +
+      kpi("backend errors", human(latest(errors)), "/s", "answered with an error", errors, "var(--down)") +
+      kpi("crossing a region", human(latest(outside)), "/s", "a key living elsewhere", outside, "var(--violet)") +
+      kpi("idle connections", human(idleNow), "", human(openedNow) + " opened since start", null, null);
+
+    drawChart(q("throughput"), [
+      { values: routed, colour: "var(--cool)", fill: true },
+      { values: served, colour: "var(--teal)" },
+      { values: outside, colour: "var(--violet)" }
+    ]);
+    drawChart(q("trouble"), [
+      { values: errors, colour: "var(--down)", fill: true },
+      { values: refused, colour: "var(--warn)" },
+      { values: waits, colour: "var(--faint)" }
+    ]);
+    drawChart(q("cachehit"), [
+      { values: chit, colour: "var(--up)", fill: true },
+      { values: cmiss, colour: "var(--warn)" }
+    ], { height: 150 });
+    drawChart(q("dirhit"), [
+      { values: dhit, colour: "var(--teal)", fill: true },
+      { values: dmiss, colour: "var(--warn)" }
+    ], { height: 150 });
+    drawChart(q("pool"), [
+      { values: hist.map(function (p) { return p.idle; }), colour: "var(--cool)", fill: true }
+    ], { height: 150 });
+
+    drawTopology(q("topology"), snap);
+    drawLatency(q("latency"), snap);
+
+    var alerts = q("alerts");
+    if (!snap.alerts.length) {
+      alerts.innerHTML = '<div class="calm"><span class="dot on"></span>' +
+        'nothing is raising an alert</div>';
+    } else {
+      alerts.innerHTML = snap.alerts.map(function (a) {
+        return '<div class="alert"><b>' + esc(a.name) + '</b>' +
+          '<span class="who">' + esc(a.subject) + '</span>' +
+          '<span class="why">' + esc(a.detail) + '</span></div>';
+      }).join("");
+    }
+
+    var peers = q("peers");
+    if (!snap.peers.length) {
+      peers.innerHTML = '<div class="empty">this proxy is not in a group; ' +
+        'it answers for itself alone</div>';
+    } else {
+      peers.innerHTML = '<table><tbody>' + snap.peers.map(function (p) {
+        return '<tr><td class="mono">' + esc(p.name) + '</td>' +
+          '<td><span class="tag ' + (p.reachable ? "up" : "down") + '">' +
+          (p.reachable ? "answering" : "unreachable") + '</span></td>' +
+          '<td class="num">' + (p.reachable ? p.endpoints + " endpoints" : "—") + '</td></tr>';
+      }).join("") + '</tbody></table>';
+    }
+
+    var busiest = 0;
+    snap.endpoints.forEach(function (e) { if (e.statements > busiest) busiest = e.statements; });
+    var body = snap.endpoints.map(function (e) {
+      var share = busiest > 0 ? (e.statements / busiest) * 100 : 0;
+      return '<tr><td>' + esc(e.region || "—") + '</td>' +
+        '<td class="num">' + (e.shard === null ? "—" : e.shard) + '</td>' +
+        '<td class="mono">' + esc(e.address) + '</td>' +
+        '<td><span class="tag ' + esc(e.state) + '">' + esc(e.state) + '</span></td>' +
+        '<td>' + esc(e.role) + '</td>' +
+        '<td>' + (e.role_matches ? '<span class="tag ghost">yes</span>'
+                                 : '<span class="tag down">NO</span>') + '</td>' +
+        '<td class="num">' + millis(e.typical_us) + '</td>' +
+        '<td class="num">' + millis(e.connect_us) + '</td>' +
+        '<td class="num">' + (e.behind === null ? "—" : bytes(e.behind)) + '</td>' +
+        '<td class="num">' + human(e.statements) + '</td>' +
+        '<td class="num">' + (e.errors ? '<span style="color:var(--down)">' +
+            human(e.errors) + '</span>' : "0") + '</td>' +
+        '<td class="num">' + e.idle + '</td>' +
+        '<td><div class="bar"><i style="width:' + share.toFixed(1) + '%"></i></div></td></tr>';
+    }).join("");
+    q("endpoints").tBodies[0].innerHTML = body ||
+      '<tr><td colspan="13" class="empty">no endpoint has been probed yet</td></tr>';
+
+    q("page").classList.remove("stale");
+  }
+
+  function esc(value) {
+    return String(value === null || value === undefined ? "" : value)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  var socket = null, backoff = 500, timer = null, refused = 0, polling = null;
+
+  function wire(state, words) {
+    q("wire").className = "dot " + state;
+    text(q("wiretext"), words);
+  }
+
+  function poll() {
+    fetch("/snapshot", { cache: "no-store" })
+      .then(function (answer) {
+        if (answer.status === 401) { location.href = "/login"; return null; }
+        return answer.json();
+      })
+      .then(function (snap) { if (snap) { render(snap); wire("wait", "polling"); } })
+      .catch(function () { wire("off", "unreachable"); });
+  }
+
+  function fallBackToPolling() {
+    if (polling) return;
+    wire("wait", "polling");
+    poll();
+    polling = setInterval(poll, 2000);
+  }
+
+  function connect() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    var scheme = location.protocol === "https:" ? "wss://" : "ws://";
+    try {
+      socket = new WebSocket(scheme + location.host + "/live");
+    } catch (e) {
+      return retry();
+    }
+    socket.onopen = function () {
+      backoff = 500; refused = 0;
+      if (polling) { clearInterval(polling); polling = null; }
+      story = [];
+      wire("on", "live");
+    };
+    socket.onmessage = function (event) {
+      try { render(JSON.parse(event.data)); } catch (e) { /* a torn frame is not fatal */ }
+    };
+    socket.onclose = function (event) {
+      if (event && event.code === 1008) { location.href = "/login"; return; }
+      retry();
+    };
+    socket.onerror = function () { if (socket) socket.close(); };
+  }
+
+  function retry() {
+    socket = null;
+    refused += 1;
+    if (refused >= 3) {
+      fallBackToPolling();
+      timer = setTimeout(connect, 30000);
+      return;
+    }
+    q("page").classList.add("stale");
+    wire("off", "reconnecting");
+    timer = setTimeout(connect, backoff);
+    backoff = Math.min(backoff * 2, 10000);
+  }
+
+  wire("wait", "connecting");
+  connect();
+})();
+</script>

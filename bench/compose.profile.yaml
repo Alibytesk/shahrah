@@ -1,0 +1,20 @@
+name: shahrah-bench
+
+services:
+  profiled:
+    build:
+      context: .
+      dockerfile: Dockerfile.shahrah
+      args:
+        BINARY: shahrah-profile
+    entrypoint: ["env", "-u", "SHAHRAH_CONFIG", "/usr/local/bin/shahrah-proxy"]
+    cpus: 2.0
+    mem_limit: 1g
+    networks: [bench]
+    environment:
+      SHAHRAH_BACKEND: pg1:5432
+      SHAHRAH_PROFILE: /tmp/pool.svg
+      RUST_LOG: info
+    volumes: ["./flame:/tmp"]
+    depends_on:
+      pg1: {condition: service_healthy}

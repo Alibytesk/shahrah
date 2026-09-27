@@ -1,0 +1,11 @@
+shahrah-proxy
+geo/shahrah-proxy
+shahrah-before
+shahrah-after
+__pycache__/
+flame/
+shahrah-profile
+world/shahrah-proxy
+tls/
+work.sql
+.env

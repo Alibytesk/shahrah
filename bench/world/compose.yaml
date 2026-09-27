@@ -1,0 +1,180 @@
+name: shahrah-world
+
+x-primary: &primary
+  image: postgres:18
+  environment:
+    POSTGRES_PASSWORD: dev
+    POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+  command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=8",
+            "-c", "shared_buffers=64MB", "-c", "fsync=off",
+            "-c", "synchronous_commit=off", "-c", "hot_standby=on"]
+  volumes: ["./init-primary.sh:/docker-entrypoint-initdb.d/init.sh:ro"]
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U postgres"]
+    interval: 3s
+    timeout: 3s
+    retries: 40
+  networks: [world]
+
+services:
+  pgne: {<<: *primary}
+  pgnw: {<<: *primary}
+  pgeu: {<<: *primary}
+  pgas: {<<: *primary}
+  pgsa: {<<: *primary}
+  pgner:
+    image: postgres:18
+    user: postgres
+    environment:
+      PGPASSWORD: replpw
+      PGDATA: /var/lib/postgresql/data
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        until pg_isready -h pgne -U postgres -q; do sleep 2; done
+        if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+          rm -rf /var/lib/postgresql/data/* || true
+          pg_basebackup -h pgne -p 5432 -U replicator \
+            -D /var/lib/postgresql/data -Fp -Xs -R
+        fi
+        exec postgres -c hot_standby=on -c shared_buffers=64MB
+    depends_on:
+      pgne: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+    networks: [world]
+  pgnwr:
+    image: postgres:18
+    user: postgres
+    environment:
+      PGPASSWORD: replpw
+      PGDATA: /var/lib/postgresql/data
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        until pg_isready -h pgnw -U postgres -q; do sleep 2; done
+        if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+          rm -rf /var/lib/postgresql/data/* || true
+          pg_basebackup -h pgnw -p 5432 -U replicator \
+            -D /var/lib/postgresql/data -Fp -Xs -R
+        fi
+        exec postgres -c hot_standby=on -c shared_buffers=64MB
+    depends_on:
+      pgnw: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+    networks: [world]
+  pgeur:
+    image: postgres:18
+    user: postgres
+    environment:
+      PGPASSWORD: replpw
+      PGDATA: /var/lib/postgresql/data
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        until pg_isready -h pgeu -U postgres -q; do sleep 2; done
+        if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+          rm -rf /var/lib/postgresql/data/* || true
+          pg_basebackup -h pgeu -p 5432 -U replicator \
+            -D /var/lib/postgresql/data -Fp -Xs -R
+        fi
+        exec postgres -c hot_standby=on -c shared_buffers=64MB
+    depends_on:
+      pgeu: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+    networks: [world]
+  pgasr:
+    image: postgres:18
+    user: postgres
+    environment:
+      PGPASSWORD: replpw
+      PGDATA: /var/lib/postgresql/data
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        until pg_isready -h pgas -U postgres -q; do sleep 2; done
+        if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+          rm -rf /var/lib/postgresql/data/* || true
+          pg_basebackup -h pgas -p 5432 -U replicator \
+            -D /var/lib/postgresql/data -Fp -Xs -R
+        fi
+        exec postgres -c hot_standby=on -c shared_buffers=64MB
+    depends_on:
+      pgas: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+    networks: [world]
+  pgsar:
+    image: postgres:18
+    user: postgres
+    environment:
+      PGPASSWORD: replpw
+      PGDATA: /var/lib/postgresql/data
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        until pg_isready -h pgsa -U postgres -q; do sleep 2; done
+        if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+          rm -rf /var/lib/postgresql/data/* || true
+          pg_basebackup -h pgsa -p 5432 -U replicator \
+            -D /var/lib/postgresql/data -Fp -Xs -R
+        fi
+        exec postgres -c hot_standby=on -c shared_buffers=64MB
+    depends_on:
+      pgsa: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+    networks: [world]
+  world-proxy:
+    build:
+      context: ..
+      dockerfile: world/Dockerfile.proxy
+    cap_add: [NET_ADMIN]
+    ports: ["9187:9187", "6432:6432"]
+    cpus: 2.0
+    mem_limit: 1g
+    volumes: ["./conf:/cfg:ro", "./tls:/tls:ro"]
+    environment:
+      SHAHRAH_CONFIG: /cfg/world.toml
+      SHAHRAH_METRICS_TLS_CERT: /tls/cert.pem
+      SHAHRAH_METRICS_TLS_KEY: /tls/key.pem
+      SHAHRAH_BACKEND: pgne:5432
+      SHAHRAH_METRICS_PASSWORD: ${DASHBOARD_PASSWORD:?run ./prepare.sh first}
+      FAR: "pgnw:32 pgnwr:32 pgeu:42 pgeur:42 pgas:75 pgasr:75 pgsa:58 pgsar:58"
+    depends_on:
+      pgner: {condition: service_healthy}
+      pgnwr: {condition: service_healthy}
+      pgeur: {condition: service_healthy}
+      pgasr: {condition: service_healthy}
+      pgsar: {condition: service_healthy}
+    networks: [world]
+
+  client:
+    build:
+      context: ..
+      dockerfile: Dockerfile.client
+    cpus: 2.0
+    networks: [world]
+    volumes: ["./:/world:ro"]
+
+networks:
+  world:
+    name: shahrah-world

@@ -1,0 +1,23 @@
+region = "one"
+
+[policy.keys.pgbench_accounts]
+column = "aid"
+type = "int"
+
+[[shards]]
+number = 1
+region = "one"
+primary = { address = "pg1:5432", region = "one" }
+logical = [{ start = 0, end = 21844 }]
+
+[[shards]]
+number = 2
+region = "one"
+primary = { address = "pg2:5432", region = "one" }
+logical = [{ start = 21845, end = 43689 }]
+
+[[shards]]
+number = 3
+region = "one"
+primary = { address = "pg3:5432", region = "one" }
+logical = [{ start = 43690, end = 65535 }]

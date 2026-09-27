@@ -1,0 +1,20 @@
+[package]
+name = "shahrah-sql"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+pg_query = { workspace = true }
+serde = { workspace = true, features = ["std"] }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+divan = "0.1.21"
+
+[[bench]]
+name = "analyse"
+harness = false
+
+[lints]
+workspace = true

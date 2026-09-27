@@ -1,0 +1,12 @@
+FROM debian:13-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates iproute2 dnsutils \
+    && rm -rf /var/lib/apt/lists/*
+COPY shahrah-proxy /usr/local/bin/shahrah-proxy
+COPY geo/far.sh /usr/local/bin/far.sh
+ENV SHAHRAH_LISTEN=0.0.0.0:6432 \
+    SHAHRAH_BACKEND_USER=shahrah \
+    SHAHRAH_BACKEND_PASSWORD=dev \
+    SHAHRAH_AUTH_DATABASE=postgres \
+    SHAHRAH_MAX_POOL=60 \
+    RUST_LOG=warn
+ENTRYPOINT ["/usr/local/bin/far.sh"]

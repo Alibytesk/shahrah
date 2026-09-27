@@ -1,0 +1,22 @@
+[package]
+name = "shahrah-hash"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+xxhash-rust = { workspace = true }
+serde = { workspace = true, optional = true, features = [] }
+
+[[bench]]
+name = "shard"
+harness = false
+
+[dev-dependencies]
+divan = "0.1.21"
+
+[features]
+serde = ["dep:serde"]
+
+[lints]
+workspace = true

@@ -1,0 +1,27 @@
+[general]
+host = "0.0.0.0"
+port = 6432
+admin_username = "admin"
+admin_password = "admin"
+connect_timeout = 5000
+idle_timeout = 300000
+healthcheck_timeout = 1000
+server_lifetime = 3600000
+
+[pools.postgres]
+pool_mode = "transaction"
+default_role = "primary"
+query_parser_enabled = false
+primary_reads_enabled = true
+sharding_function = "pg_bigint_hash"
+
+[pools.postgres.users.0]
+username = "app1"
+password = "app1pw"
+pool_size = 200
+min_pool_size = 1
+statement_timeout = 0
+
+[pools.postgres.shards.0]
+servers = [["pg1", 5432, "primary"]]
+database = "postgres"

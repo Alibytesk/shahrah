@@ -1,0 +1,22 @@
+[general]
+host = "0.0.0.0"
+port = 6432
+default_pool_size = 200
+
+[[databases]]
+name = "postgres"
+host = "pg1"
+port = 5432
+shard = 0
+
+[[databases]]
+name = "postgres"
+host = "pg2"
+port = 5432
+shard = 1
+
+[[databases]]
+name = "postgres"
+host = "pg3"
+port = 5432
+shard = 2

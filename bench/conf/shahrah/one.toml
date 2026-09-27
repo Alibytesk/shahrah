@@ -1,0 +1,11 @@
+region = "one"
+
+[policy.keys.pgbench_accounts]
+column = "aid"
+type = "int"
+
+[[shards]]
+number = 1
+region = "one"
+primary = { address = "pg1:5432", region = "one" }
+logical = [{ start = 0, end = 65535 }]

@@ -1,0 +1,28 @@
+name: shahrah-bench
+
+x-arm: &arm
+  cpus: 2.0
+  mem_limit: 1g
+  networks: [bench]
+  volumes: ["./conf/shahrah:/cfg:ro"]
+  environment:
+    SHAHRAH_CONFIG: /cfg/one.toml
+  depends_on:
+    pg1: {condition: service_healthy}
+
+services:
+  before:
+    <<: *arm
+    build:
+      context: .
+      dockerfile: Dockerfile.shahrah
+      args:
+        BINARY: shahrah-before
+
+  after:
+    <<: *arm
+    build:
+      context: .
+      dockerfile: Dockerfile.shahrah
+      args:
+        BINARY: shahrah-after

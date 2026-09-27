@@ -1,0 +1,40 @@
+region = "na-east"
+
+[policy.keys.accounts]
+column = "aid"
+type = "int"
+
+[[shards]]
+number = 1
+region = "na-east"
+primary = { address = "pgne:5432", region = "na-east" }
+replicas = [{ address = "pgner:5432", region = "na-east" }]
+logical = [{ start = 0, end = 65535 }]
+
+[[shards]]
+number = 2
+region = "na-west"
+primary = { address = "pgnw:5432", region = "na-west" }
+replicas = [{ address = "pgnwr:5432", region = "na-west" }]
+logical = [{ start = 0, end = 65535 }]
+
+[[shards]]
+number = 3
+region = "eu-central"
+primary = { address = "pgeu:5432", region = "eu-central" }
+replicas = [{ address = "pgeur:5432", region = "eu-central" }]
+logical = [{ start = 0, end = 65535 }]
+
+[[shards]]
+number = 4
+region = "asia-west"
+primary = { address = "pgas:5432", region = "asia-west" }
+replicas = [{ address = "pgasr:5432", region = "asia-west" }]
+logical = [{ start = 0, end = 65535 }]
+
+[[shards]]
+number = 5
+region = "sa-east"
+primary = { address = "pgsa:5432", region = "sa-east" }
+replicas = [{ address = "pgsar:5432", region = "sa-east" }]
+logical = [{ start = 0, end = 65535 }]

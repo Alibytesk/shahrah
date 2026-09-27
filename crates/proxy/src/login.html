@@ -1,0 +1,53 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shahrah</title>
+<style>
+:root { --ink:#e7ecf3; --dim:#8b97a8; --faint:#5d6879; --bg:#0d1117;
+        --panel:#151b24; --edge:#222b38; --cool:#58a6ff; --down:#f85149; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: radial-gradient(1200px 600px at 50% -10%, #16202c, var(--bg));
+  color: var(--ink); display: flex; align-items: center; justify-content: center;
+  font: 14px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: 24px;
+}
+.card {
+  background: var(--panel); border: 1px solid var(--edge); border-radius: 14px;
+  padding: 30px 32px; width: 100%; max-width: 390px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.45);
+}
+h1 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: .3px; }
+h1 span { color: var(--faint); font-weight: 400; }
+p.why { color: var(--dim); margin: 8px 0 22px; font-size: 13px; }
+label {
+  display: block; font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--faint); margin-bottom: 7px; font-weight: 600;
+}
+input {
+  width: 100%; background: #0f151d; border: 1px solid var(--edge); color: var(--ink);
+  border-radius: 8px; padding: 11px 13px; font: inherit;
+}
+input:focus { outline: none; border-color: var(--cool); }
+button {
+  width: 100%; margin-top: 16px; background: var(--cool); border: 0; color: #08121f;
+  font: inherit; font-weight: 650; border-radius: 8px; padding: 11px; cursor: pointer;
+}
+button:hover { filter: brightness(1.08); }
+.bad {
+  margin: 0 0 18px; padding: 10px 13px; border-radius: 8px; font-size: 13px;
+  background: rgba(248,81,73,.09); border: 1px solid rgba(248,81,73,.3); color: var(--down);
+}
+.note { color: var(--faint); font-size: 11.5px; margin-top: 20px; }
+</style>
+<form class="card" method="post" action="/login">
+  <h1>shahrah<span> · control</span></h1>
+  <p class="why">This page shows where every user's data lives. It asks first.</p>
+  <!--TROUBLE-->
+  <label for="password">operator password</label>
+  <input id="password" name="password" type="password" autocomplete="current-password"
+         autofocus required>
+  <button type="submit">sign in</button>
+  <p class="note">Five wrong answers and this address waits, longer each time.</p>
+</form>

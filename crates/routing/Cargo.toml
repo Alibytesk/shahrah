@@ -1,0 +1,25 @@
+[package]
+name = "shahrah-routing"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+shahrah-hash = { workspace = true }
+serde = { workspace = true, features = ["std"] }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+divan = "0.1.21"
+toml = { workspace = true }
+
+[[bench]]
+name = "route"
+harness = false
+
+[lints]
+workspace = true
+
+[[bench]]
+name = "directory"
+harness = false
