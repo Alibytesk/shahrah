@@ -1,5 +1,7 @@
 # shahrah
 
+Shahrah is a PostgreSQL proxy written in Rust for geo-distributed PostgreSQL deployments.
+
 A PostgreSQL proxy that knows which region a user's data is in.
 
 It shards by a key you name, splits reads from writes, pools connections, and —
@@ -310,6 +312,17 @@ cargo test --workspace
 The workspace denies `unsafe`, `unwrap`, `expect`, slicing that can panic, and
 arithmetic that can overflow. There are no comments in the source: the names and
 the tests are meant to carry it.
+
+Keywords:
+- PostgreSQL proxy
+- PostgreSQL sharding
+- PostgreSQL connection pooling
+- PostgreSQL read/write splitting
+- PostgreSQL multi-region
+- PostgreSQL geo-sharding
+- PostgreSQL routing
+- Rust PostgreSQL proxy
+- distributed PostgreSQL
 
 ## Benchmarks
 
